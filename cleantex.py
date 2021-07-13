@@ -44,7 +44,7 @@ def cleanup(buffer: str) -> str:
         # Remove trailing whitespace at closing parenthesis
         (r" +\)", r")"),
         
-        # Remove redundant space before \pagenote.
+        # Remove redundant space before \endnote.
         (r"\s*(\\endnote)", r"%\n% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n\1"),
         
         # Break line after colon (but skip citations)
