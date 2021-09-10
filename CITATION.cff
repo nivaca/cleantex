@@ -1,0 +1,17 @@
+abstract: Python script that cleans up a LaTeX document transformed from a TEI source.
+authors:
+  - family-names: Vaughan
+    given-names: Nicolas
+    orcid: "https://orcid.org/0000-0002-2877-0539"
+cff-version: 1.2.0
+date-released: "2021-06-01"
+keywords:
+  - "regex cleanup"
+  - Python
+  - LaTeX
+license: CC-BY-NC-SA-4.0
+licence-url: "https://creativecommons.org/licenses/by-nc-sa/4.0/"
+message: If you use this software, please cite it using these metadata.
+repository-code: "https://github.com/nivaca/cleantex"
+title: cleantex
+version: 0.1
