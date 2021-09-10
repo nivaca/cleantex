@@ -2,7 +2,6 @@
 
 import re
 import sys
-from typing import Pattern
 
 
 def rmmultispaces(lines: list) -> list:
