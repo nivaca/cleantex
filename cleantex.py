@@ -2,7 +2,7 @@
 
 import re
 import sys
-from pprint import pprint as pp
+from typing import Pattern
 
 
 def rmmultispaces(lines: list) -> list:
@@ -22,11 +22,11 @@ def unindent(lines: list) -> list:
 
 
 def cleanup(buffer: str) -> str:
-    patterns = [
-        # Remove redundant space around opening bracket
+    patterns: list[tuple[str, str]] = [
+        # Remove redundant space around opening braces
         (r" ?{ ?", r"{"),
 
-        # Remove redundant space/NL before closing bracket
+        # Remove redundant space/NL before closing braces
         (r"\s}", r"}"),
 
         # Remove redundant space before punctuation
@@ -44,8 +44,9 @@ def cleanup(buffer: str) -> str:
         # Remove trailing whitespace at closing parenthesis
         (r" +\)", r")"),
         
-        # Remove redundant space before \endnote.
-        (r"\s*(\\endnote)", r"%\n% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n\1"),
+        # Remove redundant space before \smnoteanchor.
+        # (r"\s*(\\smnoteanchor)", r"%\n% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n\1"),
+        (r"\s*(\\smnoteanchor)", r"\1"),
         
         # Break line after colon (but skip citations)
         (r": +(?!\d)", r":\n"),
@@ -80,8 +81,8 @@ def cleanup(buffer: str) -> str:
         (r":\n\n", r":\n"),
 
         # remove space/NL before/after square brackets       
-        (r"\[\s+", r"["),
         (r"\s+\]", r"]"),
+        (r"\[\s+", r"["),
 
         #
         # (r"\s+\]", r"]"),
@@ -104,7 +105,7 @@ def main():
     inputfile = ""
 
     if num_args > 1:
-        inputfile = sys.argv[(1)]
+        inputfile = sys.argv[1]
     else:
         print("Usage: cleanup.py file.tex")
         exit(0)
