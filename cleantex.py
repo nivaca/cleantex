@@ -1,5 +1,25 @@
 #!/usr/bin/env python3
-"""Remove unwanted whitespace from LaTeX files produced from TEI."""
+# SPDX-License-Identifier: GPL-3.0-or-later OR CC-BY-NC-SA-4.0
+"""Remove unwanted whitespace from LaTeX files produced from TEI.
+
+When a TEI-XML edition is converted to LaTeX, the indentation and the line
+breaks of the XML pass to the .tex file. The result compiles, but the source
+is very hard to read and to compare with diff. This script takes such a file
+and makes it tidy: it removes the extra spaces, glues the notes to their
+word, puts the line numbers in their own lines and breaks the text more or
+less in one sentence for line.
+
+The cleaning is done in three stages (WHITESPACE_RULES, LABEL_RULES and
+CLEANUP_RULES). Each stage is a list of (pattern, replacement) pairs that are
+applied in order, so the position of a rule in the list is important.
+
+Usage example:
+
+    cleantex.py edition.tex        # writes edition_out.tex
+    cleantex.py -d edition.tex     # only shows what would change
+
+See README.md for all the options and the known limitations.
+"""
 
 from __future__ import annotations
 
@@ -13,10 +33,15 @@ Rule = tuple[re.Pattern[str], str]
 
 
 def compile_rules(rules: list[tuple[str, str]]) -> list[Rule]:
+    """Compile a list of (pattern, replacement) pairs only one time.
+
+    All patterns use re.MULTILINE, so ^ and $ match at each line.
+    """
     return [(re.compile(pattern, re.MULTILINE), repl) for pattern, repl in rules]
 
 
 def apply_rules(buffer: str, rules: list[Rule]) -> str:
+    """Apply the rules one after the other and return the new text."""
     for cpattern, replacement in rules:
         buffer = cpattern.sub(replacement, buffer)
     return buffer
@@ -34,6 +59,7 @@ WHITESPACE_RULES: list[Rule] = compile_rules([
 
 
 # ------------------------------------------------------
+# Labels (\smlabel) and line numbers (\linum, \linumcom)
 LABEL_RULES: list[Rule] = compile_rules([
     # delete empty \smlabel{}
     (r"\\smlabel{}", r""),
@@ -56,6 +82,8 @@ LABEL_RULES: list[Rule] = compile_rules([
 
 
 # ------------------------------------------------------
+# General cleanup: punctuation, notes, line breaks and some typography.
+# Careful: a rule here can depend on the result of a previous one.
 CLEANUP_RULES: list[Rule] = compile_rules([
     # Remove redundant space around opening braces
     (r" ?{ ?", r"{"),
@@ -161,17 +189,23 @@ CLEANUP_RULES: list[Rule] = compile_rules([
 
 # ------------------------------------------------------
 def clean(buffer: str) -> str:
-    """Run the full cleaning pipeline on a LaTeX source string."""
+    """Clean a LaTeX source string and return the result.
+
+    This is the function to use if you import the module from Python.
+    It does not read or write any file.
+    """
     buffer = apply_rules(buffer, WHITESPACE_RULES)
     buffer = apply_rules(buffer, LABEL_RULES)
     return apply_rules(buffer, CLEANUP_RULES)
 
 
 def default_output(path: Path, suffix: str) -> Path:
+    """Build the output name, for example a.tex -> a_out.tex."""
     return path.with_name(f"{path.stem}{suffix}{path.suffix}")
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    """Read the command line options and check that they make sense."""
     parser = argparse.ArgumentParser(
         prog="cleantex",
         description="Remove unwanted whitespace from LaTeX files produced from TEI.",
@@ -221,7 +255,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 
 def process(path: Path, args: argparse.Namespace) -> None:
-    """Clean one file and write or display the result."""
+    """Clean one file and write or display the result.
+
+    What happens with the result depends on the options: it can go to a
+    new file, to the same file (--in-place), to the screen (--stdout) or be
+    shown as a diff (--diff). The path "-" means standard input.
+    """
     if str(path) == "-":
         sys.stdout.write(clean(sys.stdin.read()))
         return
@@ -247,6 +286,11 @@ def process(path: Path, args: argparse.Namespace) -> None:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Process all the files and return the exit code.
+
+    If one file fails, the error is printed and the other files are still
+    processed, but the exit code will be 1.
+    """
     args = parse_args(argv)
     status = 0
     for path in args.files:

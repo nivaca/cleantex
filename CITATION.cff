@@ -9,8 +9,9 @@ keywords:
   - "regex cleanup"
   - Python
   - LaTeX
-license: CC-BY-NC-SA-4.0
-licence-url: "https://creativecommons.org/licenses/by-nc-sa/4.0/"
+license:
+  - GPL-3.0-or-later
+  - CC-BY-NC-SA-4.0
 message: If you use this software, please cite it using these metadata.
 repository-code: "https://github.com/nivaca/cleantex"
 title: cleantex
